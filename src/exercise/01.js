@@ -76,9 +76,9 @@ function useUser() {
 // 🐨 add a function here called `updateUser`
 // Then go down to the `handleSubmit` from `UserSettings` and put that logic in
 // this function. It should accept: dispatch, user, and updates
-const updateUser = (dispatch, user,updates) => {
+const updateUser = (dispatch, user, updates) => {
   dispatch({type: 'start update', updates})
-  userClient.updateUser(user,updates).then(
+  userClient.updateUser(user, updates).then(
     updatedUser => dispatch({type: 'finish update', updatedUser}),
     error => dispatch({type: 'fail update', error}),
   )
@@ -104,7 +104,7 @@ function UserSettings() {
 
   function handleSubmit(event) {
     event.preventDefault()
-    updateUser(userDispatch, user, formState);
+    updateUser(userDispatch, user, formState)
   }
 
   return (
