@@ -15,9 +15,9 @@ function Toggle(props) {
     // component: as example below  <span> Hello</span>
     // comment out this statement to see error message in the console
     if (typeof child.type === 'string') {
-      return child;
+      return child
     }
-    return React.cloneElement(child, {on, toggle});
+    return React.cloneElement(child, {on, toggle})
   })
 }
 
