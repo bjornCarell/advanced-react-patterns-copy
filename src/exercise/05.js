@@ -72,7 +72,7 @@ function App() {
     if (action.type === actionTypes.toggle && clickedTooMuch) {
       return {on: state.on}
     }
-    
+
     return toggleReducer(state, action)
   }
 

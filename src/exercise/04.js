@@ -4,7 +4,10 @@
 import * as React from 'react'
 import {Switch} from '../switch'
 
-const callAll = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args))
+const callAll =
+  (...fns) =>
+  (...args) =>
+    fns.forEach(fn => fn && fn(...args))
 
 function useToggle() {
   const [on, setOn] = React.useState(false)
@@ -22,7 +25,7 @@ function useToggle() {
         onClick: callAll(onClick, toggle),
         ...togglerProps,
       }
-    }
+    },
   }
 }
 
