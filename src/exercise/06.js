@@ -15,6 +15,7 @@ const actionTypes = {
   reset: 'reset',
 }
 
+// HOOK
 const useControlledSwitchWarning = (
   controlPropValue,
   onChange,
@@ -49,6 +50,7 @@ const useControlledSwitchWarning = (
   ])
 }
 
+// 
 function toggleReducer(state, {type, initialState}) {
   switch (type) {
     case actionTypes.toggle: {
@@ -63,11 +65,12 @@ function toggleReducer(state, {type, initialState}) {
   }
 }
 
+// HOOK
 function useToggle({
-  initialOn = false,
-  reducer = toggleReducer,
   onChange,
   on: controlledOn,
+  initialOn = false,
+  reducer = toggleReducer,
 } = {}) {
   const {current: initialState} = React.useRef({on: initialOn})
   const [state, dispatch] = React.useReducer(reducer, initialState)
@@ -75,14 +78,20 @@ function useToggle({
   const onIsControlled = controlledOn != null
   const on = onIsControlled ? controlledOn : state.on
 
-  useControlledSwitchWarning(controlledOn, onChange, 'on', '<Toggle/>',)
+  useControlledSwitchWarning(controlledOn, onChange, 'on', 'useToogle',)
 
   const dispatchWithOnChange = action => {
+    // We only want to call the dispatch fn if we are not controlled
+    // The dispatch fn will trigger a re-render of the component
+    // If the component is controlled we might not want that
     if (!onIsControlled) {
       dispatch(action)
     }
-    typeof onChange === 'function' &&
-      onChange(reducer({...state, on}, action), action)
+      // We call the onChange fn with the state we are transitioning to
+      // To get the state we are transitioning to, we need the reducer fn
+      // We update state with our suggested state change, which here is "on"
+      // and with the action triggering the state change
+      onChange?.(reducer({...state, on}, action), action)
   }
 
   const toggle = () => dispatchWithOnChange({type: actionTypes.toggle})
@@ -113,12 +122,14 @@ function useToggle({
   }
 }
 
+//
 function Toggle({on: controlledOn, onChange}) {
   const {on, getTogglerProps} = useToggle({on: controlledOn, onChange})
   const props = getTogglerProps({on})
   return <Switch {...props} />
 }
 
+//
 function App() {
   const [bothOn, setBothOn] = React.useState(false)
   const [timesClicked, setTimesClicked] = React.useState(0)
