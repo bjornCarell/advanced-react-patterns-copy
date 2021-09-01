@@ -12,35 +12,48 @@ import {useAuth} from '../auth-context'
 const UserContext = React.createContext()
 UserContext.displayName = 'UserContext'
 
+const actionTypes = {
+  START_UPDATE: 'START_UPDATE',
+  FINNISH_UPDATE: 'FINNISH_UPDATE',
+  FAIL_UPDATE: 'FAIL_UPDATE',
+  RESET: 'RESET'
+}
+
+const status = {
+  PENDING: 'PENDING',
+  RESOLVED: 'RESOLVED',
+  REJECTED: 'REJECTED',
+}
+
 function userReducer(state, action) {
   switch (action.type) {
-    case 'start update': {
+    case actionTypes.START_UPDATE: {
       return {
         ...state,
         user: {...state.user, ...action.updates},
-        status: 'pending',
+        status: status.PENDING,
         storedUser: state.user,
       }
     }
-    case 'finish update': {
+    case actionTypes.FINNISH_UPDATE: {
       return {
         ...state,
         user: action.updatedUser,
-        status: 'resolved',
+        status: status.RESOLVED,
         storedUser: null,
         error: null,
       }
     }
-    case 'fail update': {
+    case actionTypes.FAIL_UPDATE: {
       return {
         ...state,
-        status: 'rejected',
+        status: status.REJECTED,
         error: action.error,
         user: state.storedUser,
         storedUser: null,
       }
     }
-    case 'reset': {
+    case actionTypes.RESET: {
       return {
         ...state,
         status: null,
@@ -61,7 +74,10 @@ function UserProvider({children}) {
     storedUser: user,
     user,
   })
+
   const value = [state, dispatch]
+  // we expose the state and dispatch function by passing it to the value 
+  // prop of the Context Provider
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>
 }
 
@@ -73,15 +89,17 @@ function useUser() {
   return context
 }
 
-// 🐨 add a function here called `updateUser`
-// Then go down to the `handleSubmit` from `UserSettings` and put that logic in
-// this function. It should accept: dispatch, user, and updates
-const updateUser = (dispatch, user, updates) => {
-  dispatch({type: 'start update', updates})
-  userClient.updateUser(user, updates).then(
-    updatedUser => dispatch({type: 'finish update', updatedUser}),
-    error => dispatch({type: 'fail update', error}),
-  )
+// The Helper function letting the user 
+const updateUser = async (dispatch, user, updates) => {
+  dispatch({type: actionTypes.START_UPDATE, updates})
+  try {
+    const updatedUser = await userClient.updatedUser(user, updates)
+    dispatch({type: actionTypes.FINNISH_UPDATE, updatedUser})
+    return updatedUser
+  } catch (error) {
+    dispatch({type: actionTypes.FAIL_UPDATE, error})
+    throw error
+  }
 }
 
 // export {UserProvider, useUser}
@@ -91,8 +109,8 @@ const updateUser = (dispatch, user, updates) => {
 function UserSettings() {
   const [{user, status, error}, userDispatch] = useUser()
 
-  const isPending = status === 'pending'
-  const isRejected = status === 'rejected'
+  const isPending = status === status.PENDING
+  const isRejected = status === status.REJECTED
 
   const [formState, setFormState] = React.useState(user)
 
@@ -104,6 +122,8 @@ function UserSettings() {
 
   function handleSubmit(event) {
     event.preventDefault()
+    // Helper function in use within a consumer (UserSettings) 
+    // of the User Context (useUser())
     updateUser(userDispatch, user, formState)
   }
 
@@ -151,7 +171,7 @@ function UserSettings() {
           type="button"
           onClick={() => {
             setFormState(user)
-            userDispatch({type: 'reset'})
+            userDispatch({type: actionTypes.RESET})
           }}
           disabled={!isChanged || isPending}
         >

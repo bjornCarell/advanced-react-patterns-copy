@@ -28,12 +28,13 @@ function toggleReducer(state, {type, initialState}) {
   }
 }
 
-// 🐨 add a new option called `reducer` that defaults to `toggleReducer`
+// HOOK 
+// We give the user of our component a ticket to control state
+// This is done by us passing the reducer as an argument 
+// The user can now build their own reducer to control state however the like,
+// or not, and just use the default reducer toggleReducer.
 function useToggle({initialOn = false, reducer = toggleReducer} = {}) {
   const {current: initialState} = React.useRef({on: initialOn})
-  // 🐨 instead of passing `toggleReducer` here, pass the `reducer` that's
-  // provided as an option
-  // ... and that's it! Don't forget to check the 💯 extra credit!
   const [state, dispatch] = React.useReducer(reducer, initialState)
   const {on} = state
 
@@ -64,10 +65,16 @@ function useToggle({initialOn = false, reducer = toggleReducer} = {}) {
   }
 }
 
+// 
 function App() {
   const [timesClicked, setTimesClicked] = React.useState(0)
   const clickedTooMuch = timesClicked >= 4
 
+  // If the user of our component only wants change default reducer 
+  // functionality by a minor bit, we can let them do that by customize their 
+  // own scenario where the change should do something that is not covered in 
+  // our default reducer. And if the change is covered by our default reducer
+  // the user can just pass state and action to that. 
   const toggleStateReducer = (state, action) => {
     if (action.type === actionTypes.toggle && clickedTooMuch) {
       return {on: state.on}
